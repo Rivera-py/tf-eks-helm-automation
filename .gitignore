@@ -1,0 +1,39 @@
+# Terraform state
+**.tfstate
+**.tfstate.*
+**/.terraform/
+*/.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+
+# Local environment files
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# Python virtualenv (if any scripts/tools)
+venv/
+__pycache__/

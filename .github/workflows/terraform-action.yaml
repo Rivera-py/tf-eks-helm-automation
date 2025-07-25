@@ -1,0 +1,67 @@
+name: Terraform Template
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: 'The action to perform, e.g., "apply", "plan", "destroy".'
+      tf_directory:
+        required: true
+        type: string
+        description: 'The directory containing the Terraform configuration files.'
+      stack:
+        required: false
+        type: string
+        default: 'aws'
+        description: 'The stack name for the Terraform execution.'
+      environment:
+        required: true
+        type: string
+        description: 'The environment for the Terraform execution, e.g., "dev", "staging", "prod".'
+      aws_region:
+        required: false
+        type: string
+        default: 'eu-west-2'
+        description: 'The AWS region to configure credentials for.'
+      role:
+        required: false
+        type: string
+        default: 'arn:aws:iam::299858989921:role/github-actions-oidc-role'
+        description: 'The AWS IAM role to assume for the GitHub Actions workflow.'
+      state_bucket_prefix:
+        required: false
+        type: string
+        default: 's3-tf-eks-helm-automation-state'
+        description: 'The prefix for the S3 bucket used for Terraform state.'
+
+jobs:
+  test:
+    name: 'Test AWS Terraform Code'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}/${{ inputs.tf_directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: latest
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ inputs.role }}
+          role-session-name: GitHubActionsSession
+      - name: Initialise Terraform
+        run: |
+          account_id=$(aws account get-account-information --query AccountId --output text)
+          state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
+          terraform init -input=false -backend-config="bucket=$state_bucket" --backend-config="key=${{ inputs.stack }}/terraform.tfstate" --backend-config="region=${{ inputs.aws_region }}"
+      - name: Check Format
+        run: terraform fmt -check --recursive || echo "::warning file=terraform-aws::Terraform format check failed"
