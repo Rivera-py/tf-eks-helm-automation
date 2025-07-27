@@ -74,6 +74,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
-          path: plan/*
+          path: ${{ github.workspace }}/${{ inputs.stack }}/plan/*
           if-no-files-found: error
       
