@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "feature/*" ]
   pull_request:
+    branches: [ "feature/*" ]
 
 permissions:
   contents: read
@@ -11,9 +12,8 @@ permissions:
 
 jobs:
   aws-terraform-plan:
-    uses: ./.github/workflows/terraform-action.yaml
+    uses: ./.github/workflows/terraform-setup.yaml
     with:
       action: plan
-      tf_directory: terraform-aws
       environment: dev
       aws_region: eu-west-2

@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: 'The action to perform, e.g., "apply", "plan", "destroy".'
-      tf_directory:
-        required: true
-        type: string
-        description: 'The directory containing the Terraform configuration files.'
       stack:
         required: false
         type: string
@@ -44,24 +40,40 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ github.workspace }}/${{ inputs.tf_directory }}
+        working-directory: ${{ github.workspace }}/${{ inputs.stack }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ inputs.role }}
           role-session-name: GitHubActionsSession
-      - name: Initialise Terraform
+      - name: Init
         run: |
           account_id=$(aws account get-account-information --query AccountId --output text)
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
           terraform init -input=false -backend-config="bucket=$state_bucket" --backend-config="key=${{ inputs.stack }}/terraform.tfstate" --backend-config="region=${{ inputs.aws_region }}"
-      - name: Check Format
+      - name: Workspace
+        run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
+      - name: Format
         run: terraform fmt -check --recursive || echo "::warning file=terraform-aws::Terraform format check failed"
+      - name: Validate
+        run: terraform validate || echo "::warning file=terraform-aws::Terraform validation failed"
+      - name: Plan
+        run: |
+          mkdir plan
+          terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
+          terraform show -json plan/tfplan > plan/plan.json
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ github.workspace }}/${{ inputs.stack }}/plan/*
+          if-no-files-found: error
+      
