@@ -71,7 +71,7 @@ jobs:
           terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json tfplan > plan/plan.json
       - name: Upload Plan
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
           path: plan/*
