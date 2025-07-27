@@ -69,7 +69,7 @@ jobs:
         run: |
           mkdir plan
           terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
-          terraform show -json tfplan > plan/plan.json
+          terraform show -json plan/tfplan > plan/plan.json
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
