@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: 'The action to perform, e.g., "apply", "plan", "destroy".'
-      tf_directory:
-        required: true
-        type: string
-        description: 'The directory containing the Terraform configuration files.'
       stack:
         required: false
         type: string
@@ -44,7 +40,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ github.workspace }}/${{ inputs.tf_directory }}
+        working-directory: ${{ github.workspace }}/${{ inputs.stack }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
