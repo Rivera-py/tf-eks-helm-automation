@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   aws-terraform-plan:
-    uses: ./.github/workflows/terraform-action.yaml
+    uses: ./.github/workflows/terraform-setup.yaml
     with:
       action: plan
       tf_directory: terraform-aws
