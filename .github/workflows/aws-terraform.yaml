@@ -14,6 +14,5 @@ jobs:
     uses: ./.github/workflows/terraform-setup.yaml
     with:
       action: plan
-      tf_directory: terraform-aws
       environment: dev
       aws_region: eu-west-2
