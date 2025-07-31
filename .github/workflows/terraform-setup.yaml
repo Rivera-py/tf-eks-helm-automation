@@ -81,6 +81,7 @@ jobs:
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
           output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.xml
+          log_level: DEBUG
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
