@@ -70,6 +70,24 @@ jobs:
           mkdir plan
           terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
+      - name: Run the Action
+        uses: devops-infra/action-tflint@v0.3
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+      - name: Install and run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          framework: terraform
+          file: ${{ github.workspace }}/${{ inputs.stack }}/plan/tfplan.json
+          output_format: json
+          output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.json
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.json
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
