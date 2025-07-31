@@ -81,13 +81,13 @@ jobs:
         with:
           framework: terraform
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/tfplan.json
-          output_format: json
-          output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.json
+          output_format: junitxml
+          output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.xml
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
-            ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.json
+            ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.xml
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
