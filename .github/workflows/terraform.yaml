@@ -91,11 +91,12 @@ jobs:
 
       - name: Run TFLint
         run: |
-          TFLINT_LOG=debug tflint --init --config .github/workflows/resources/.tflint.hcl
-          TFLINT_LOG=debug tflint --var-file=environments/${{ inputs.environment }}.tfvars --config .github/workflows/resources/.tflint.hcl --format junit
+          config_file="${{ github.workspace }}/.github/workflows/resources/.tflint.hcl"
+          TFLINT_LOG=debug tflint --init --config "$config_file"
+          TFLINT_LOG=debug tflint --var-file=environments/${{ inputs.environment }}.tfvars --config "$config_file" --format junit
           tflint \
             --var-file=environments/${{ inputs.environment }}.tfvars \
-            --config .github/workflows/resources/.tflint.hcl \
+            --config "$config_file" \
             --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
 
       - name: Install and run Checkov
