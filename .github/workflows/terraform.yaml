@@ -92,12 +92,12 @@ jobs:
       - name: Run TFLint
         run: |
           config_file="${{ github.workspace }}/.github/workflows/resources/.tflint.hcl"
-          TFLINT_LOG=debug tflint --init --config "$config_file"
-          TFLINT_LOG=debug tflint --var-file=environments/${{ inputs.environment }}.tfvars --config "$config_file" --format junit
+          tflint --init --config "$config_file"
           tflint \
             --var-file=environments/${{ inputs.environment }}.tfvars \
             --config "$config_file" \
             --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
+          ls -lhrt plan tests
 
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
