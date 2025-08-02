@@ -1,0 +1,26 @@
+name: 'AWS - Dev - Terraform Test'
+
+on:      
+  push:
+    branches: [ "feature/*" ]
+  pull_request:
+    branches: [ "feature/*" ]
+
+permissions:
+  contents: read
+  id-token: write
+  checks: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  aws-terraform-test:
+    name: 'Setup and Plan Terraform - aws - dev'
+    uses: ./.github/workflows/terraform.yaml
+    with:
+      action: plan
+      environment: dev
+      aws_region: eu-west-2
