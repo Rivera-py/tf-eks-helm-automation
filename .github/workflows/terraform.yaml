@@ -60,7 +60,11 @@ jobs:
         run: |
           account_id=$(aws account get-account-information --query AccountId --output text)
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
-          terraform init -input=false -backend-config="bucket=$state_bucket" --backend-config="key=${{ inputs.stack }}/terraform.tfstate" --backend-config="region=${{ inputs.aws_region }}"
+          terraform init \
+            -input=false \
+            --backend-config="bucket=$state_bucket" \
+            --backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
+            --backend-config="region=${{ inputs.aws_region }}"
 
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
@@ -74,7 +78,10 @@ jobs:
       - name: Plan
         run: |
           mkdir plan tests
-          terraform plan -out=plan/tfplan -input=false --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
+          terraform plan \
+            -out=plan/tfplan \
+            -input=false \
+            --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
 
       - name: Setup TFLint
@@ -84,8 +91,12 @@ jobs:
 
       - name: Run TFLint
         run: |
-          tflint --init
-          tflint --var-file=environments/${{ inputs.environment }}.tfvars --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
+          tflint --init --config .github/workflows/resources/.tflint.hcl
+          tflint --var-file=environments/${{ inputs.environment }}.tfvars --config .github/workflows/resources/.tflint.hcl --format junit
+          tflint \
+            --var-file=environments/${{ inputs.environment }}.tfvars \
+            --config .github/workflows/resources/.tflint.hcl \
+            --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
 
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
