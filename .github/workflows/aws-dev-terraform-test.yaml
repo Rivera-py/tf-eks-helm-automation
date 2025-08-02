@@ -17,7 +17,7 @@ permissions:
 jobs:
   aws-terraform-plan:
     name: 'Setup and Plan Terraform - aws - dev'
-    uses: ./.github/workflows/terraform-setup.yaml
+    uses: ./.github/workflows/terraform-plan-and-test.yaml
     with:
       action: plan
       environment: dev
