@@ -67,7 +67,7 @@ jobs:
         run: terraform validate || echo "::warning file=terraform-aws::Terraform validation failed"
       - name: Plan
         run: |
-          mkdir plan
+          mkdir plan tests
           terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
       - name: Setup TFLint
@@ -79,13 +79,12 @@ jobs:
         with:
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
-          output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.xml
-          log_level: DEBUG
+          output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/tests/
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
-            ${{ github.workspace }}/${{ inputs.stack }}/plan/checkov.xml
+            ${{ github.workspace }}/${{ inputs.stack }}/tests/results_junitxml.xml
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
