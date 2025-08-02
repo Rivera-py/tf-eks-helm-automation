@@ -1,4 +1,4 @@
-name: Terraform Plan and Test
+name: Terraform
 
 on:
   workflow_call:
@@ -39,56 +39,68 @@ jobs:
     environment: ${{ inputs.environment }}
     defaults:
       run:
-        shell: bash
         working-directory: ${{ github.workspace }}/${{ inputs.stack }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ inputs.role }}
           role-session-name: GitHubActionsSession
+
       - name: Init
         run: |
           account_id=$(aws account get-account-information --query AccountId --output text)
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
           terraform init -input=false -backend-config="bucket=$state_bucket" --backend-config="key=${{ inputs.stack }}/terraform.tfstate" --backend-config="region=${{ inputs.aws_region }}"
+
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
+
       - name: Format
         run: terraform fmt -check --recursive || echo "::warning file=terraform-aws::Terraform format check failed"
+
       - name: Validate
         run: terraform validate || echo "::warning file=terraform-aws::Terraform validation failed"
+
       - name: Plan
         run: |
           mkdir plan tests
           terraform plan -out=plan/tfplan -input=false --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
+
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: latest
+
       - name: Run TFLint
         run: |
           tflint --init
-          tflint --format --var-file=environments/${{ inputs.environment }}.tfvars junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
+          tflint --var-file=environments/${{ inputs.environment }}.tfvars --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
+
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
           output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/tests/
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
             ${{ github.workspace }}/${{ inputs.stack }}/tests/results_junitxml.xml
+            ${{ github.workspace }}/${{ inputs.stack }}/tests/tflint.xml
+
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:

@@ -3,10 +3,8 @@ name: 'AWS - Dev - Terraform Test'
 on:      
   push:
     branches: [ "feature/*" ]
-
   pull_request:
     branches: [ "feature/*" ]
-  
 
 permissions:
   contents: read
@@ -14,10 +12,14 @@ permissions:
   checks: write
   pull-requests: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  aws-terraform-plan:
+  aws-terraform-test:
     name: 'Setup and Plan Terraform - aws - dev'
-    uses: ./.github/workflows/terraform-plan-and-test.yaml
+    uses: ./.github/workflows/terraform.yaml
     with:
       action: plan
       environment: dev
