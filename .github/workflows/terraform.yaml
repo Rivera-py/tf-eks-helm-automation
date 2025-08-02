@@ -97,7 +97,6 @@ jobs:
             --var-file=environments/${{ inputs.environment }}.tfvars \
             --config "$config_file" \
             --format junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
-          ls -lhrt plan tests
 
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
