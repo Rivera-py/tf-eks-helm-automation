@@ -1,4 +1,4 @@
-name: Terraform Template
+name: Terraform Plan and Test
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ on:
 
 jobs:
   test:
-    name: 'Test AWS Terraform Code'
+    name: 'Terraform Plan and Test - ${{ inputs.stack }} - ${{ inputs.environment }}'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     defaults:
@@ -68,12 +68,16 @@ jobs:
       - name: Plan
         run: |
           mkdir plan tests
-          terraform plan -out=plan/tfplan -input=false || echo "::warning file=terraform-aws::Terraform plan failed"
+          terraform plan -out=plan/tfplan -input=false --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: latest
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --format --var-file=environments/${{ inputs.environment }}.tfvars junit > tests/tflint.xml || echo "::warning file=terraform-aws::TFLint failed"
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
