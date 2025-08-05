@@ -1,0 +1,36 @@
+name: 'Stack - Environment - Terraform Deployment'
+
+on:      
+  workflow_dispatch:
+    inputs:
+      action:
+        required: true
+        type: string
+        description: 'The action to perform, e.g., "apply", "plan", "destroy".'
+      stack:
+        required: false
+        type: string
+        default: 'aws'
+        description: 'The stack name for the Terraform execution. e.g. "aws", "k8s", "helm".'
+      environment:
+        required: true
+        type: string
+        description: 'The environment for the Terraform execution, e.g., "dev", "staging", "prod".'
+
+permissions:
+  contents: read
+  id-token: write
+  checks: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  trigger:
+    name: 'Terraform ${{ inputs.action }} - ${{ inputs.stack }} - ${{ inputs.environment }}'
+    uses: ./.github/workflows/terraform.yaml
+    with:
+      action: ${{ inputs.action }}
+      environment: ${{ inputs.environment }}
