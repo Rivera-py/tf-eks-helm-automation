@@ -7,6 +7,7 @@ on:
         required: true
         type: string
         description: 'The action to perform, e.g., "apply", "plan", "destroy".'
+        default: 'plan'
       stack:
         required: false
         type: string
@@ -16,6 +17,12 @@ on:
         required: true
         type: string
         description: 'The environment for the Terraform execution, e.g., "dev", "staging", "prod".'
+        default: 'dev'
+  push:
+    branches: [ "feature/*" ]
+  pull_request:
+    branches: [ "feature/*" ]
+  
 
 permissions:
   contents: read
