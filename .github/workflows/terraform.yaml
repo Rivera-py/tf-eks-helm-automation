@@ -178,4 +178,7 @@ jobs:
 
       - name: Run Terraform Action
         run: |
-          terraform ${{ inputs.action }} plan/tfplan -auto-approve -input=false || echo "::warning file=terraform-${{ inputs.stack}}::Terraform ${{ inputs.action }} failed"
+          terraform ${{ inputs.action }} plan/tfplan \
+            -auto-approve \
+            -input=false \
+            --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-${{ inputs.stack}}::Terraform ${{ inputs.action }} failed"

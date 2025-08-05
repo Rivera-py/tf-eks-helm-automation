@@ -18,11 +18,6 @@ on:
         type: string
         description: 'The environment for the Terraform execution, e.g., "dev", "staging", "prod".'
         default: 'dev'
-  push:
-    branches: [ "feature/*" ]
-  pull_request:
-    branches: [ "feature/*" ]
-  
 
 permissions:
   contents: read
