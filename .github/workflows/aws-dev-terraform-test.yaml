@@ -22,6 +22,5 @@ jobs:
     name: 'Plan and Test Terraform - aws - dev'
     uses: ./.github/workflows/terraform.yaml
     with:
-      action: apply
       environment: dev
       aws_region: eu-west-2
