@@ -140,6 +140,7 @@ jobs:
   run:
     name: 'Run Terraform - ${{ inputs.stack }} - ${{ inputs.environment }} - ${{ inputs.action }}'
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     needs: approval
     if: ${{ inputs.action != 'plan'}}
     steps:
