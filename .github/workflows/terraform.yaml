@@ -62,9 +62,9 @@ jobs:
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
           terraform init \
             -input=false \
-            --backend-config="bucket=$state_bucket" \
-            --backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
-            --backend-config="region=${{ inputs.aws_region }}"
+            -backend-config="bucket=$state_bucket" \
+            -backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
+            -backend-config="region=${{ inputs.aws_region }}"
 
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
@@ -81,7 +81,7 @@ jobs:
           terraform plan \
             -out=plan/tfplan \
             -input=false \
-            --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
+            -var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
 
       - name: Setup TFLint
@@ -166,12 +166,12 @@ jobs:
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
           terraform init \
             -input=false \
-            --backend-config="bucket=$state_bucket" \
-            --backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
-            --backend-config="region=${{ inputs.aws_region }}"
+            -backend-config="bucket=$state_bucket" \
+            -backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
+            -backend-config="region=${{ inputs.aws_region }}"
 
       - name: Workspace
-        run: terraform workspace select ${{ inputs.environment }}
+        run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
       
       - name: Download Terraform Plan Artifact
         uses: actions/download-artifact@v4
@@ -184,4 +184,4 @@ jobs:
           terraform ${{ inputs.action }} plan/tfplan \
             -auto-approve \
             -input=false \
-            --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-${{ inputs.stack}}::Terraform ${{ inputs.action }} failed"
+            -var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-${{ inputs.stack}}::Terraform ${{ inputs.action }} failed"
