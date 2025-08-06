@@ -52,9 +52,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: eu-west-2
+          aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.role }}
-          role-session-name: GitHubActionsSession
+          role-session-name: GitHubActionsSessionTest
 
       - name: Init
         run: |
@@ -118,6 +118,7 @@ jobs:
           name: terraform-plan
           path: ${{ github.workspace }}/${{ inputs.stack }}/plan/*
           if-no-files-found: error
+
   approval:
     name: 'Manual Approval for Terraform - ${{ inputs.stack }} - ${{ inputs.environment }}'
     runs-on: ubuntu-latest
@@ -135,6 +136,7 @@ jobs:
             - Stack: ${{ inputs.stack }}
             - Environment: ${{ inputs.environment }}
             - Action: ${{ inputs.action }}
+
   run:
     name: 'Run Terraform - ${{ inputs.stack }} - ${{ inputs.environment }} - ${{ inputs.action }}'
     runs-on: ubuntu-latest
@@ -154,7 +156,7 @@ jobs:
         with:
           aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.role }}
-          role-session-name: GitHubActionsSession
+          role-session-name: GitHubActionsSessionDeploy
 
       - name: Init
         run: |
