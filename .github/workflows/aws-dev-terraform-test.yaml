@@ -11,6 +11,7 @@ permissions:
   id-token: write
   checks: write
   pull-requests: write
+  issues: write
 
 defaults:
   run:
@@ -18,9 +19,8 @@ defaults:
 
 jobs:
   aws-terraform-test:
-    name: 'Setup and Plan Terraform - aws - dev'
+    name: 'Plan and Test Terraform - aws - dev'
     uses: ./.github/workflows/terraform.yaml
     with:
-      action: plan
       environment: dev
       aws_region: eu-west-2

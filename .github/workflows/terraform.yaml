@@ -3,10 +3,6 @@ name: Terraform
 on:
   workflow_call:
     inputs:
-      action:
-        required: true
-        type: string
-        description: 'The action to perform, e.g., "apply", "plan", "destroy".'
       stack:
         required: false
         type: string
@@ -52,9 +48,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: eu-west-2
+          aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.role }}
-          role-session-name: GitHubActionsSession
+          role-session-name: GitHubActionsSessionTest
 
       - name: Init
         run: |
@@ -62,9 +58,9 @@ jobs:
           state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
           terraform init \
             -input=false \
-            --backend-config="bucket=$state_bucket" \
-            --backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
-            --backend-config="region=${{ inputs.aws_region }}"
+            -backend-config="bucket=$state_bucket" \
+            -backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
+            -backend-config="region=${{ inputs.aws_region }}"
 
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
@@ -81,7 +77,7 @@ jobs:
           terraform plan \
             -out=plan/tfplan \
             -input=false \
-            --var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
+            -var-file=environments/${{ inputs.environment }}.tfvars || echo "::warning file=terraform-aws::Terraform plan failed"
           terraform show -json plan/tfplan > plan/plan.json
 
       - name: Setup TFLint
@@ -118,4 +114,3 @@ jobs:
           name: terraform-plan
           path: ${{ github.workspace }}/${{ inputs.stack }}/plan/*
           if-no-files-found: error
-      
