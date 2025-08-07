@@ -47,11 +47,23 @@ resource "aws_vpc" "eks" {
   }
 }
 
+resource "aws_default_security_group" "eks_default_block_all" {
+  vpc_id                 = aws_vpc.eks.id
+  revoke_rules_on_delete = true
+
+  ingress = []
+  egress  = []
+
+  tags = {
+    Name = "${var.environment}-eks-default-block-all"
+  }
+}
+
 resource "aws_subnet" "eks_public" {
   count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.eks.id
   cidr_block              = var.public_subnet_cidrs[count.index]
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
   availability_zone       = element(var.azs, count.index)
 
   tags = {

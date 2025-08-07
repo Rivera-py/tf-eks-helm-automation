@@ -17,7 +17,7 @@ This repository contains Terraform configurations and Helm charts for automating
 - Include comprehensive variable descriptions with type constraints.
 - Add output values for important resource attributes.
 - Give clear descriptions for any resources and modules.
-- Suffix AWS resource descriptions with " - Managed by Terraform" (only resource blocks, do not add in output blocks or comments).
+- If AWS Terraform resources or configuration blocks accept a `description` argument, suffix a helpful description in this setting with " - Managed by Terraform".
 
 ## Variables
 - Use `variables.tf` to define all input variables.
