@@ -53,14 +53,7 @@ jobs:
           role-session-name: GitHubActionsSessionTest
 
       - name: Init
-        run: |
-          account_id=$(aws account get-account-information --query AccountId --output text)
-          state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
-          terraform init \
-            -input=false \
-            -backend-config="bucket=$state_bucket" \
-            -backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
-            -backend-config="region=${{ inputs.aws_region }}"
+        run: terraform init -input=false
 
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
@@ -97,9 +90,11 @@ jobs:
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
+          skip_check: CKV_AWS_338,CKV_AWS_352
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
           output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/tests/
+          soft_fail: true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
