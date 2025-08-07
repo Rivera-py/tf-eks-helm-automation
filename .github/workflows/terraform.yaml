@@ -53,14 +53,7 @@ jobs:
           role-session-name: GitHubActionsSessionTest
 
       - name: Init
-        run: |
-          account_id=$(aws account get-account-information --query AccountId --output text)
-          state_bucket="${{ inputs.state_bucket_prefix }}-$account_id-${{ inputs.aws_region }}"
-          terraform init \
-            -input=false \
-            -backend-config="bucket=$state_bucket" \
-            -backend-config="key=${{ inputs.stack }}/terraform.tfstate" \
-            -backend-config="region=${{ inputs.aws_region }}"
+        run: terraform init -input=false
 
       - name: Workspace
         run: terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}

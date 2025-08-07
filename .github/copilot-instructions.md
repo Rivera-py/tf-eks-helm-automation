@@ -12,11 +12,12 @@ This repository contains Terraform configurations and Helm charts for automating
 - Follow consistent file naming conventions.
 - Follow AWS resource naming conventions, with consistent prefixes for resources.
 - Use "Name" tags for all AWS resources.
+- Do not add tags to resources that are defined in default_tags in versions.tf.
 - Use data sources to reference existing resources where applicable.
 - Include comprehensive variable descriptions with type constraints.
 - Add output values for important resource attributes.
 - Give clear descriptions for any resources and modules.
-- Suffix AWS resource descriptions with " - Managed by Terraform".
+- Suffix AWS resource descriptions with " - Managed by Terraform" (only resource blocks, do not add in output blocks or comments).
 
 ## Variables
 - Use `variables.tf` to define all input variables.
