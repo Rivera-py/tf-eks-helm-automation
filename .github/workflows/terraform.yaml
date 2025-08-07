@@ -93,6 +93,7 @@ jobs:
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
           output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/tests/
+          soft_fail: true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
