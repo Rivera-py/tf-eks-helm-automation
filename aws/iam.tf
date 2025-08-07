@@ -32,13 +32,16 @@ resource "aws_iam_role" "eks_service_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "eks_service_attachments" {
-  for_each = toset(local.policy_names)
+  for_each = {
+    for policy in local.policy_names : policy => policy
+  }
 
   role       = aws_iam_role.eks_service_role.name
   policy_arn = "arn:aws:iam::aws:policy/${each.value}"
 }
 
-# Output the role ARN for use in EKS cluster attachment
+# Cluster IAM Outputs
+
 output "eks_service_role_arn" {
   description = "ARN of the EKS service IAM role"
   value       = aws_iam_role.eks_service_role.arn

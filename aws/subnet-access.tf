@@ -1,3 +1,5 @@
+# Private NACL Resources
+
 locals {
   eks_private_nacl_rules = [
     { # Allow all inbound traffic from within the VPC
@@ -73,6 +75,8 @@ resource "aws_network_acl_rule" "eks_private" {
   from_port      = each.value.from_port == null ? null : each.value.from_port
   to_port        = each.value.to_port == null ? null : each.value.to_port
 }
+
+# Public NACL Resources
 
 locals {
   eks_public_nacl_rules = [

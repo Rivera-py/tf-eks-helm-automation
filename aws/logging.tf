@@ -1,13 +1,48 @@
-# VPC Flow Logs resources
+# Shared Logging Resources
 
-resource "aws_cloudwatch_log_group" "eks_vpc_flow_logs" {
-  name              = "/aws/vpc/${var.environment}-eks-flow-logs"
-  retention_in_days = 14
-
-  tags = {
-    Name = "${var.environment}-eks-vpc-flow-logs"
+data "aws_iam_policy_document" "cloudwatch_logs_kms" {
+  statement {
+    sid    = "AllowCloudWatchLogs"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${data.aws_region.current.region}.amazonaws.com"]
+    }
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    sid    = "AllowAccount"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = [data.aws_caller_identity.current.account_id]
+    }
+    actions = [
+      "kms:*"
+    ]
+    resources = ["*"]
   }
 }
+
+resource "aws_kms_key" "cloudwatch_logs" {
+  description         = "KMS key for cloudwatch log group encryption - Managed by Terraform"
+  enable_key_rotation = true
+
+  policy = data.aws_iam_policy_document.cloudwatch_logs_kms.json
+
+  tags = {
+    Name = "${var.environment}-cloudwatch-logs-kms"
+  }
+}
+
+# VPC Flow Logs resources
 
 data "aws_iam_policy_document" "vpc_flow_logs_assume_role" {
   statement {
@@ -50,6 +85,16 @@ resource "aws_iam_role_policy" "vpc_flow_logs" {
   name   = "${var.environment}-eks-vpc-flow-logs-policy"
   role   = aws_iam_role.vpc_flow_logs.id
   policy = data.aws_iam_policy_document.vpc_flow_logs_policy.json
+}
+
+resource "aws_cloudwatch_log_group" "eks_vpc_flow_logs" {
+  name              = "/aws/vpc/${var.environment}-eks-flow-logs"
+  retention_in_days = 14
+  kms_key_id        = aws_kms_key.cloudwatch_logs.arn
+
+  tags = {
+    Name = "${var.environment}-eks-vpc-flow-logs"
+  }
 }
 
 resource "aws_flow_log" "eks_vpc" {

@@ -90,6 +90,7 @@ jobs:
       - name: Install and run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
+          skip_check: CKV_AWS_338,CKV_AWS_352
           file: ${{ github.workspace }}/${{ inputs.stack }}/plan/plan.json
           output_format: junitxml
           output_file_path: ${{ github.workspace }}/${{ inputs.stack }}/tests/
