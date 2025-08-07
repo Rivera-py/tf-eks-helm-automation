@@ -35,6 +35,12 @@ variable "azs" {
   ]
 }
 
+variable "allowed_public_ingress_ip" {
+  description = "The public IP allowed to access the public subnet on port 443."
+  type        = string
+  default     = "198.51.100.10/32" # Example IP, replace as needed
+}
+
 # EKS Network Resources
 
 resource "aws_vpc" "eks" {
