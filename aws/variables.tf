@@ -79,8 +79,8 @@ variable "kubernetes_version" {
   default     = null
 }
 
-variable "user_access_role_name" {
+variable "admin_access_username" {
   description = "Name of the IAM role for user access to the EKS cluster."
   type        = string
-  default     = "default_cka_role"
+  default     = "ckatraining"
 }

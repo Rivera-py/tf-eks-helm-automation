@@ -53,6 +53,11 @@ resource "aws_eks_cluster" "cluster" {
     subnet_ids          = aws_subnet.eks_private[*].id
   }
 
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
   encryption_config {
     resources = ["secrets"]
     provider {
@@ -73,8 +78,12 @@ resource "aws_eks_cluster" "cluster" {
   ]
 }
 
-resource "aws_eks_access_entry" "admin_user_access" {
-  cluster_name      = aws_eks_cluster.cluster.name
-  principal_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.user_access_role_name}"
-  kubernetes_groups = ["system:masters"]
+resource "aws_eks_access_policy_association" "admin_user_access" {
+  cluster_name  = aws_eks_cluster.cluster.name
+  principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.admin_access_username}"
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
 }
