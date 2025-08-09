@@ -72,3 +72,8 @@ resource "aws_eks_cluster" "cluster" {
     aws_cloudwatch_log_group.eks_control_plane
   ]
 }
+
+resource "aws_access_entry" "user_access" {
+  cluster_name = aws_eks_cluster.cluster.name
+  role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.user_access_role_name}"
+}
