@@ -108,3 +108,20 @@ resource "aws_flow_log" "eks_vpc" {
     Name = "${var.environment}-eks-vpc-flow-logs"
   }
 }
+
+# Kubernetes API Logging
+
+resource "aws_cloudwatch_log_group" "eks_control_plane" {
+  name              = "/aws/eks/${var.environment}/cluster"
+  retention_in_days = 14
+  kms_key_id        = aws_kms_key.cloudwatch_logs.arn
+
+  tags = {
+    Name = "${var.environment}-eks-control-plane-logs"
+  }
+}
+
+# Note: To enable EKS control plane logging, set 'enabled_cluster_log_types' in your aws_eks_cluster resource to:
+# ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+# AWS will automatically send logs to this log group if it exists and the EKS service role has the correct permissions.
+
