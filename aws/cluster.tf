@@ -87,3 +87,15 @@ resource "aws_eks_access_policy_association" "admin_user_access" {
     type = "cluster"
   }
 }
+
+# EKS Cluster Outputs
+
+output "eks_cluster_name" {
+  description = "Name of the EKS cluster"
+  value       = aws_eks_cluster.cluster.name
+}
+
+output "eks_cluster_endpoint" {
+  description = "Endpoint URL of the EKS cluster"
+  value       = aws_eks_cluster.cluster.endpoint
+}

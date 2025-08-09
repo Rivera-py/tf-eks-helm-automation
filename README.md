@@ -60,6 +60,83 @@ Workflows are defined in `.github/workflows/` and follow a modular, reusable pat
 - VPC Flow Logs and CloudWatch for monitoring and auditing.
 - Encryption is enabled for data at rest and in transit.
 
+## EKS Cluster Security & Access
+
+- **Secrets Encryption:** EKS secrets are encrypted at rest using a customer-managed KMS key (CMK), managed by Terraform and restricted to EKS and your AWS account.
+- **Control Plane Logging:** EKS control plane logs (API, audit, authenticator, controllerManager, scheduler) are sent to a dedicated, encrypted CloudWatch Log Group.
+- **Admin Access:** Cluster admin access is managed using EKS Access Policy Associations (AmazonEKSAdminPolicy) or via the `aws-auth` ConfigMap. The new EKS Access Entry/Policy Association resources are used for fine-grained access control.
+- **Kubernetes Network Config:** The cluster uses a custom service CIDR and supports encryption and upgrade policies.
+
+## Project Setup Steps
+
+## Getting Started
+
+Follow these steps to provision and manage your EKS infrastructure:
+
+### 0. Prerequisites
+
+- **AWS CLI:** Installed and configured with a user that has sufficient IAM permissions (admin or equivalent).
+- **kubectl:** Installed for interacting with your EKS cluster.
+- **Terraform:** Installed (version >= 1.3 recommended).
+
+### 1. Clone the Repository
+
+```sh
+git clone https://github.com/<your-org>/tf-eks-helm-automation.git
+cd tf-eks-helm-automation
+```
+
+### 2. Configure Prerequisite Variables
+
+Edit `prereqs/terraform.tfvars` and set the following values to match your GitHub organization and repository:
+
+```hcl
+github_org  = "your-github-org"
+github_repo = "tf-eks-helm-automation"
+```
+
+### 3. Deploy Prerequisite Resources
+
+Initialize and apply the Terraform configuration for prerequisites (e.g., S3 backend, IAM roles):
+
+```sh
+cd prereqs
+terraform init
+terraform apply
+```
+
+> **Note:** Prerequisite resources are typically permanent. You may manage their state locally or migrate to remote S3 as needed.
+
+### 4. Configure Environment Variables
+
+Edit the relevant environment variable files in `aws/environments/*.tfvars` to customize settings for each environment (dev, staging, prod):
+
+```hcl
+# Example: aws/environments/dev.tfvars
+# TODO: add examples here as project develops
+```
+
+### 5. Deploy AWS Infrastructure
+
+Initialize and apply the main Terraform configuration for your chosen environment:
+
+```sh
+cd ../aws
+terraform init
+terraform workspace new dev # or select an existing workspace
+terraform apply -var-file="environments/dev.tfvars"
+```
+
+### 6. Update kubectl Access
+
+After deployment, update your kubeconfig to access the EKS cluster:
+
+```sh
+aws eks update-kubeconfig --name <cluster_name>
+```
+
+You can now interact with your cluster using `kubectl`.
+
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
