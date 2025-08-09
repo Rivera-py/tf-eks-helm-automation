@@ -40,6 +40,13 @@ This repository contains Terraform configurations and Helm charts for automating
 - Use encryption for sensitive data at rest and in transit.
 - Use S3 based locking for Terraform state files.
 
+## Documentation
+1. README.md instructions:
+    - Include a brief overview of the project.
+    - Do not provide instructions for setting up a development environment.
+    - Include a section detailing github action workflows, including parameters and triggers and overall flow.
+    - Add a section giving a high-level description of the AWS architecture based on the Terraform code.
+
 ## Development Guidelines
 When suggesting code changes or new features, consider:
 1. **Quality**: Ensure readability, maintainability, and proper documentation.
@@ -50,4 +57,4 @@ When suggesting code changes or new features, consider:
 6. **Backward Compatibility**: Ensure that changes do not break existing functionality unless explicitly stated.
 7. **Testing**: Include unit tests and integration tests where applicable.
 8. **Performance**: Consider performance implications of changes, especially in resource-intensive operations.
-9. **Documentation**: Update README files and inline comments to reflect changes made.
+9. **Documentation**: Update README files and inline comments to reflect changes made, following documentation instructions above.
