@@ -12,6 +12,16 @@ locals {
       from_port   = null
       to_port     = null
     },
+    { # Allow inbound ephemeral ports for return traffic from NAT/internet
+      name        = "private_ingress_ephemeral"
+      rule_number = 110
+      egress      = false
+      protocol    = "tcp"
+      rule_action = "allow"
+      cidr_block  = "0.0.0.0/0"
+      from_port   = 1024
+      to_port     = 65535
+    },
     { # Default deny all other inbound traffic
       name        = "private_ingress_deny_all"
       rule_number = 200
@@ -21,6 +31,16 @@ locals {
       cidr_block  = "0.0.0.0/0"
       from_port   = 0
       to_port     = 0
+    },
+    { # Allow outbound HTTPS (443) to the internet
+      name        = "private_egress_https"
+      rule_number = 99
+      egress      = true
+      protocol    = "tcp"
+      rule_action = "allow"
+      cidr_block  = "0.0.0.0/0"
+      from_port   = 443
+      to_port     = 443
     },
     { # Allow all established outbound traffic (ephemeral ports)
       name        = "private_egress_ephemeral"
@@ -33,7 +53,7 @@ locals {
       to_port     = 65535
     },
     { # Allow all outbound traffic to the VPC
-      name        = "private_egress_to_public"
+      name        = "private_egress_to_vpc"
       rule_number = 101
       egress      = true
       protocol    = "-1"
@@ -100,6 +120,16 @@ locals {
       from_port   = null
       to_port     = null
     },
+    { # Allow inbound ephemeral ports for return traffic from internet
+      name        = "public_ingress_ephemeral"
+      rule_number = 110
+      egress      = false
+      protocol    = "tcp"
+      rule_action = "allow"
+      cidr_block  = "0.0.0.0/0"
+      from_port   = 1024
+      to_port     = 65535
+    },
     { # Default deny all other inbound traffic
       name        = "public_ingress_deny_all"
       rule_number = 200
@@ -120,13 +150,13 @@ locals {
       from_port   = null
       to_port     = null
     },
-    { # Allow outbound HTTPS (443) to the allowed public IP
+    { # Allow outbound HTTPS (443) to the internet
       name        = "public_egress_https"
       rule_number = 101
       egress      = true
       protocol    = "tcp"
       rule_action = "allow"
-      cidr_block  = var.allowed_public_ingress_ip
+      cidr_block  = "0.0.0.0/0"
       from_port   = 443
       to_port     = 443
     },

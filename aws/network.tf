@@ -32,8 +32,10 @@ resource "aws_subnet" "eks_public" {
   availability_zone       = element(var.azs, count.index)
 
   tags = {
-    Name = "${var.environment}-eks-public-${element(var.azs, count.index)}"
-    Type = "public"
+    Name                                                   = "${var.environment}-eks-public-${element(var.azs, count.index)}"
+    Type                                                   = "public"
+    "kubernetes.io/role/elb"                               = "1"
+    "kubernetes.io/cluster/eks-cluster-${var.environment}" = "owned"
   }
 }
 
@@ -75,8 +77,10 @@ resource "aws_subnet" "eks_private" {
   availability_zone = element(var.azs, count.index)
 
   tags = {
-    Name = "${var.environment}-eks-private-${element(var.azs, count.index)}"
-    Type = "private"
+    Name                                                   = "${var.environment}-eks-private-${element(var.azs, count.index)}"
+    Type                                                   = "private"
+    "kubernetes.io/role/internal-elb"                      = "1"
+    "kubernetes.io/cluster/eks-cluster-${var.environment}" = "owned"
   }
 }
 
@@ -97,6 +101,7 @@ resource "aws_eip" "eks_nat" {
 
 resource "aws_route_table" "eks_private" {
   vpc_id = aws_vpc.eks.id
+
   tags = {
     Name = "${var.environment}-eks-private-rt"
     Type = "private"

@@ -84,3 +84,55 @@ variable "admin_access_username" {
   type        = string
   default     = "ckatraining"
 }
+
+variable "node_group_desired_size" {
+  description = "Desired number of nodes in the EKS node group."
+  type        = number
+  default     = 1
+}
+
+variable "node_group_max_size" {
+  description = "Maximum number of nodes in the EKS node group."
+  type        = number
+  default     = 1
+}
+
+variable "node_group_min_size" {
+  description = "Minimum number of nodes in the EKS node group."
+  type        = number
+  default     = 1
+}
+
+variable "eks_capacity_type" {
+  description = "Capacity type for the EKS node group (e.g., ON_DEMAND, SPOT)."
+  type        = string
+  default     = "ON_DEMAND"
+}
+
+variable "node_group_instance_types" {
+  description = "List of instance types for the EKS node group."
+  type        = list(string)
+  default     = ["t4g.medium"]
+}
+
+variable "eks_labels" {
+  description = "Labels to apply to the EKS node group."
+  type        = map(string)
+  default     = {}
+}
+
+variable "node_group_taints" {
+  description = "List of taints to apply to the EKS node group."
+  type = list(object({
+    key    = string
+    value  = string
+    effect = string
+  }))
+  default = []
+}
+
+variable "node_group_ami_type" {
+  description = "AMI type for the EKS node group."
+  type        = string
+  default     = "AL2023_ARM_64_STANDARD"
+}
