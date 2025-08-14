@@ -1,4 +1,4 @@
-# EKS Cluster Requires Resources
+# EKS Cluster Required Resources
 
 ## EKS Encryption Key
 
@@ -39,6 +39,89 @@ resource "aws_kms_key" "eks_secrets" {
   }
 }
 
+## EKS Cluster IAM Role
+
+locals {
+  cluster_policy_names = [ # Built-in AWS managed policies for EKS
+    "AmazonEKSClusterPolicy",
+    "AmazonEKSServicePolicy",
+    "AmazonEKSWorkerNodePolicy",
+    "AmazonEC2ContainerRegistryReadOnly",
+    "AutoScalingFullAccess"
+  ]
+}
+
+data "aws_iam_policy_document" "eks_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "eks_service_role" {
+  name               = "${var.environment}-eks-service-role"
+  description        = "IAM role for EKS cluster service - Managed by Terraform"
+  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
+
+  tags = {
+    Name = "${var.environment}-eks-service-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "eks_service_attachments" {
+  for_each = {
+    for policy in local.cluster_policy_names : policy => policy
+  }
+
+  role       = aws_iam_role.eks_service_role.name
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+}
+
+## EKS Node IAM Role
+
+locals {
+  node_policy_names = [ # Built-in AWS managed policies for EKS worker nodes
+    "AmazonEKSWorkerNodePolicy",
+    "AmazonEKS_CNI_Policy",
+    "AmazonEC2ContainerRegistryReadOnly",
+    "AmazonSSMManagedInstanceCore",
+    "CloudWatchAgentServerPolicy"
+  ]
+}
+
+data "aws_iam_policy_document" "eks_node_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "eks_node_role" {
+  name               = "${var.environment}-eks-node-role"
+  description        = "IAM role for EKS worker nodes - Managed by Terraform"
+  assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role_policy.json
+
+  tags = {
+    Name = "${var.environment}-eks-node-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_attachments" {
+  for_each = {
+    for policy in local.node_policy_names : policy => policy
+  }
+
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+}
 
 # EKS Cluster Configuration
 
@@ -49,8 +132,11 @@ resource "aws_eks_cluster" "cluster" {
   version                   = var.kubernetes_version
 
   vpc_config {
-    public_access_cidrs = [var.allowed_public_ingress_ip]
-    subnet_ids          = aws_subnet.eks_private[*].id
+    public_access_cidrs = [
+      var.allowed_public_ingress_ip
+    ]
+    subnet_ids              = aws_subnet.eks_private[*].id
+    endpoint_private_access = true
   }
 
   access_config {
@@ -88,7 +174,46 @@ resource "aws_eks_access_policy_association" "admin_user_access" {
   }
 }
 
+resource "aws_eks_node_group" "eks_nodes" {
+  cluster_name    = aws_eks_cluster.cluster.name
+  node_group_name = "${var.environment}-eks-nodes"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+  subnet_ids      = aws_subnet.eks_private[*].id
+  capacity_type   = var.eks_capacity_type
+  labels          = var.eks_labels
+  instance_types  = var.node_group_instance_types
+  ami_type        = var.node_group_ami_type
+
+  scaling_config {
+    desired_size = var.node_group_desired_size
+    max_size     = var.node_group_max_size
+    min_size     = var.node_group_min_size
+  }
+
+  remote_access {
+    ec2_ssh_key = "troubleshooting"
+  }
+
+  dynamic "taint" {
+    for_each = var.node_group_taints
+    content {
+      key    = taint.value.key
+      value  = taint.value.value
+      effect = taint.value.effect
+    }
+  }
+
+  tags = {
+    Name = "${var.environment}-eks-nodes"
+  }
+}
+
 # EKS Cluster Outputs
+
+output "eks_service_role_arn" {
+  description = "ARN of the EKS service IAM role"
+  value       = aws_iam_role.eks_service_role.arn
+}
 
 output "eks_cluster_name" {
   description = "Name of the EKS cluster"

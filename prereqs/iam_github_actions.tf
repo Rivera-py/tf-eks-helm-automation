@@ -4,7 +4,7 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
     "sts.amazonaws.com"
   ]
   thumbprint_list = [
-    "D89E3BD43D5D909B47A18977AA9D5CE36CEE184C" # GitHub's OIDC thumbprint
+    "d89e3bd43d5d909b47a18977aa9d5ce36cee184c" # GitHub's OIDC thumbprint
   ]
 }
 
@@ -44,5 +44,38 @@ resource "aws_iam_role" "github_actions" {
 
 resource "aws_iam_role_policy_attachment" "github_actions_attach" {
   role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess" # Adjust as needed
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess" # Least privilege for GitHub Actions
+}
+
+data "aws_iam_policy_document" "github_actions_state" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:DeleteObject"
+    ]
+    resources = ["${aws_s3_bucket.tf_state.arn}/*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "github_actions_state" {
+  name        = "github-actions-state-policy"
+  description = "Allow PutObject/DeleteObject on S3 state bucket, and KMS Decrypt - Managed by Terraform"
+  policy      = data.aws_iam_policy_document.github_actions_state.json
+
+  tags = {
+    Name = "github-actions-state-policy"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_state_attach" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_state.arn
 }
