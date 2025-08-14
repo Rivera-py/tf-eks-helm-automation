@@ -84,6 +84,7 @@ variable "admin_access_username" {
   type        = string
   default     = "ckatraining"
 }
+# Variables for EKS Node Group
 
 variable "node_group_desired_size" {
   description = "Desired number of nodes in the EKS node group."

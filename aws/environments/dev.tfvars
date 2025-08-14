@@ -1,2 +1,2 @@
 environment = "dev"
-# capacity_type = "SPOT"
+eks_capacity_type = "SPOT"
