@@ -62,6 +62,16 @@ locals {
       from_port   = 443
       to_port     = 443
     },
+    { # Allow all established outbound traffic (ephemeral ports)
+      name        = "public_egress_ephemeral"
+      rule_number = 199
+      egress      = true
+      protocol    = "tcp"
+      rule_action = "allow"
+      cidr_block  = "0.0.0.0/0"
+      from_port   = 1024
+      to_port     = 65535
+    },
     { # Default deny all other outbound traffic
       name        = "public_egress_deny_all"
       rule_number = 200
